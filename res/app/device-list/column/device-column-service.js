@@ -21,7 +21,10 @@ var filterOps = {
 module.exports = function DeviceColumnService($filter, gettext) {
   // Definitions for all possible values.
   return {
-    state: DeviceStatusCell({
+    install: DeviceInstallCell({
+      title: 'Install'
+    })
+  , state: DeviceStatusCell({
       title: gettext('Status')
     , value: function(device) {
         return $filter('translate')(device.enhancedStateAction)
@@ -688,6 +691,39 @@ function DeviceNoteCell(options) {
     }
   , filter: function(item, filter) {
       return filterIgnoreCase(options.value(item), filter.query)
+    }
+  })
+}
+
+function DeviceInstallCell(options) {
+  return _.defaults(options, {
+    title: options.title
+  , defaultOrder: 'asc'
+  , build: function() {
+      var td = document.createElement('td')
+      var input = document.createElement('input')
+      input.type = 'checkbox'
+      input.className = 'installCheckbox'
+      td.appendChild(input)
+
+      return td
+    }
+  , update: function(td, device) {
+      var cb = td.firstChild
+
+      if(device.state === 'using' || device.state === 'absent') {
+        cb.disabled = true
+      } else {
+        cb.setAttribute('serial', device.serial)
+      }
+
+      return td
+    }
+  , compare: function(a, b) {
+
+    }
+  , filter: function(item, filter) {
+
     }
   })
 }

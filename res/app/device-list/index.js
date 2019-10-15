@@ -1,4 +1,5 @@
 require('./device-list.css')
+require('ng-file-upload')    // 这里引用了angluar上传文件功能
 
 module.exports = angular.module('device-list', [
   require('angular-xeditable').name,
@@ -13,7 +14,8 @@ module.exports = angular.module('device-list', [
   require('./icons').name,
   require('./stats').name,
   require('./customize').name,
-  require('./search').name
+  require('./search').name,
+  'angularFileUpload'    // 这里添加上传文件服务
 ])
   .config(['$routeProvider', function($routeProvider) {
     $routeProvider

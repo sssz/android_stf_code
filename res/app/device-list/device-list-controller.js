@@ -16,6 +16,10 @@ module.exports = function DeviceListCtrl(
 
   var defaultColumns = [
     {
+      name: 'install'
+    , selected: true
+    }
+  , {
       name: 'state'
     , selected: true
     }
@@ -200,5 +204,61 @@ module.exports = function DeviceListCtrl(
     $scope.filter = []
     $scope.sort = defaultSort
     $scope.columns = defaultColumns
+  }
+  $scope.installApk = function($files) {
+    var installDevices = []
+    var cbList = document.getElementsByClassName('installCheckbox')
+
+    if($files.length) {
+      $http.get('/api/v1/devices')
+        .success(function(res) {
+          var devices = res.devices
+          var len = cbList.length
+
+          ;devices.forEach(function(device) {
+            for (var i = 0; i < len; i++) {
+              var cb = cbList[i]
+              var serial = cb.getAttribute('serial')
+
+              if (cb.checked && serial === device.serial) {
+                installDevices.push(device)
+              }
+            }
+          })
+        })
+
+      $upload.upload({
+        url: '/s/upload/apk'
+        , method: 'POST'
+        , file: $files
+      })
+        .then(function(value) {
+          var href = value.data.resources.file.href
+          $http.get(href + '/manifest')
+            .then(function(res) {
+              if (res.data.success) {
+                installDevices.forEach(function(installDevice) {
+                  var control = ControlService.create(installDevice, installDevice.channel)
+                  control.install({
+                    href: href
+                    , manifest: res.data.manifest
+                    , launch: true
+                  })
+                    .progressed(function(result) {
+
+                    })
+                })
+              } else {
+                throw new Error('Install apk to all selected devices failed')
+              }
+            })
+            .then(function() {
+              console.log('Install apk to all devices task succeed')
+            })
+            .catch(function(err) {
+              throw new Error('Install apk meet error.')
+            })
+        })
+    }
   }
 }
